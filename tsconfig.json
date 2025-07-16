@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "commonjs",
+		"noImplicitThis": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"incremental": true,
+		"lib": [
+			"ES2021"
+		]
+	},
+	"ts-node": {
+		"compilerOptions": {
+			"target": "ESNext",
+			"module": "commonjs",
+			"noImplicitThis": true,
+			"incremental": true,
+			"resolveJsonModule": true,
+			"esModuleInterop": true,
+			"lib": [
+				"ES2021"
+			]
+		}
+	}
+}

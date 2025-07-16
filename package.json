@@ -1,0 +1,21 @@
+{
+  "name": "anti-wels",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --loader ts-node/esm ./src/index.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "mariadb": "^3.4.4",
+    "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
