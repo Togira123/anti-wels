@@ -2,8 +2,17 @@ import { Client, GatewayIntentBits, MessageReaction, Options, Partials } from 'd
 import fs from 'fs';
 import { Users, BannedEmojis } from "./database/database";
 import { Op } from "sequelize";
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v10';
+import { executeCommand, getCommands } from './commandList';
 
 const { token } = JSON.parse(fs.readFileSync('./config.json', 'utf-8')) as { token: string };
+
+const botId = '1395067254885974066';
+
+const admins = new Set(['424510595702718475']);
+
+const commands = getCommands();
 
 const client = new Client({
 	makeCache: Options.cacheWithLimits({
@@ -19,8 +28,15 @@ client.login(token).catch(e => console.log(e));
 client.on('interactionCreate', async i => {
 	try {
 		if (!i.inCachedGuild()) return;
-		if (i.isCommand()) {
-			// TODO: add command to ban emojis
+		if (i.isChatInputCommand()) {
+			let name = i.commandName;
+			// TODO: also support subcommand groups
+			try {
+				name += " " + i.options.getSubcommand();
+			} catch {
+				// no subcommand
+			}
+			executeCommand(name, i, admins);
 		}
 	} catch (e) { console.error(e) }
 });
@@ -116,4 +132,11 @@ client.on('messageReactionAdd', async (r, u) => {
 
 client.once('ready', async () => {
 	console.log("Bot is ready");
+	console.log('registering commands...');
+	const rest = new REST({ version: '10' }).setToken(token);
+	await rest.put(
+		Routes.applicationCommands(botId),
+		{ body: commands },
+	);
+	console.log('commands registered!');
 });

@@ -2,7 +2,7 @@ import { Sequelize, DataTypes, QueryTypes } from 'sequelize';
 import * as types from './types';
 import fs from 'fs';
 
-const { mariadbDbName, mariadbUser, mariadbPass } = JSON.parse(fs.readFileSync('../../config.json', 'utf-8')) as { mariadbDbName: string, mariadbUser: string, mariadbPass: string };
+const { mariadbDbName, mariadbUser, mariadbPass } = JSON.parse(fs.readFileSync('./config.json', 'utf-8')) as { mariadbDbName: string, mariadbUser: string, mariadbPass: string };
 
 export const sequelize = new Sequelize(mariadbDbName, mariadbUser, mariadbPass, {
     host: 'localhost',
@@ -11,8 +11,7 @@ export const sequelize = new Sequelize(mariadbDbName, mariadbUser, mariadbPass, 
     dialectOptions: {
         useUTC: false,
         dateStrings: false,
-        typeCast: true,
-        multipleStatements: true
+        typeCast: true
     },
     timezone: 'Europe/Zurich',
     pool: {

@@ -4,11 +4,10 @@
   "description": "",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --loader ts-node/esm ./src/index.ts"
+    "start": "npx tsx src/index.ts"
   },
   "dependencies": {
     "discord.js": "^14.21.0",
@@ -16,6 +15,8 @@
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   }
 }
