@@ -27,6 +27,10 @@ export const Users = sequelize.define<types.Users>('users', {
         type: DataTypes.STRING(),
         primaryKey: true,
     },
+    emoji_id: {
+        type: DataTypes.STRING(),
+        primaryKey: true
+    },
     last_used_emoji: {
         type: DataTypes.DATE(),
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')

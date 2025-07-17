@@ -2,6 +2,7 @@ import { Model } from 'sequelize';
 
 interface UserAttributes {
     id: string;
+    emoji_id: string;
     last_used_emoji?: Date;
 }
 

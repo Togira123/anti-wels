@@ -50,35 +50,45 @@ client.on('messageCreate', async m => {
 				return;
 			}
 		}
-		let userData = await Users.findByPk(m.author.id);
-		if (userData === null) {
-			// user not found
-			userData = await Users.create({ id: m.author.id, last_used_emoji: new Date(0) });
-		}
+
 		const ids = [...m.content.matchAll(/<a?:\w+:(\d+)>/g)].map(m => m[1]);
-		const count = await BannedEmojis.count({
+		const emojis = await BannedEmojis.findAll({
 			where: {
 				id: {
 					[Op.in]: ids
 				}
 			}
 		});
-		if (count > 0) {
+		if (emojis.length > 0) {
+			const emojiIds = emojis.map(e => e.id);
+			const userData = await Users.findAll({ where: { id: m.author.id, emoji_id: { [Op.in]: emojiIds } } });
 			const now = new Date();
-			if (
-				userData.last_used_emoji.getDate() == now.getDate()
-				&& userData.last_used_emoji.getMonth() == now.getMonth()
-				&& userData.last_used_emoji.getFullYear() == now.getFullYear()
-			) {
-				await m.delete();
-			} else {
-				await Users.update({
-					last_used_emoji: new Date()
-				}, {
-					where: {
-						id: m.author.id
-					}
-				});
+			for (const emojiInfo of userData) {
+				if (
+					emojiInfo.last_used_emoji.getDate() == now.getDate()
+					&& emojiInfo.last_used_emoji.getMonth() == now.getMonth()
+					&& emojiInfo.last_used_emoji.getFullYear() == now.getFullYear()
+				) {
+					// one of the emojis in the message has already been used, delete the message
+					// but do not mark other emojis as used
+					await m.delete();
+					return;
+				}
+			}
+			// none of the emojis have been used on this day
+			const seenEmojis = new Set<string>();
+			for (const emojiInfo of userData) {
+				seenEmojis.add(emojiInfo.emoji_id);
+			}
+			await Users.update({ last_used_emoji: new Date() }, { where: { id: m.author.id, emoji_id: { [Op.in]: Array.from(seenEmojis) } } });
+			for (const usedEmoji of emojiIds) {
+				if (!seenEmojis.has(usedEmoji)) {
+					await Users.create({
+						id: m.author.id,
+						emoji_id: usedEmoji,
+						last_used_emoji: new Date()
+					});
+				}
 			}
 		}
 	} catch {
@@ -89,11 +99,6 @@ client.on('messageCreate', async m => {
 client.on('messageReactionAdd', async (r, u) => {
 	try {
 		let reaction: MessageReaction;
-		let userData = await Users.findByPk(u.id);
-		if (userData === null) {
-			// user not found
-			userData = await Users.create({ id: u.id, last_used_emoji: new Date(0) });
-		}
 		// check whether emoji is banned
 		if (r.partial) {
 			try {
@@ -106,6 +111,12 @@ client.on('messageReactionAdd', async (r, u) => {
 		}
 		const isBanned = await BannedEmojis.findByPk(reaction.emoji.id) !== null;
 		if (!isBanned) {
+			return;
+		}
+		const userData = await Users.findOne({ attributes: ['last_used_emoji'], where: { id: u.id, emoji_id: reaction.emoji.id } });
+		if (userData === null) {
+			// user has not used this emoji before
+			await Users.create({ id: u.id, emoji_id: reaction.emoji.id, last_used_emoji: new Date() });
 			return;
 		}
 		const now = new Date();
@@ -121,7 +132,8 @@ client.on('messageReactionAdd', async (r, u) => {
 				last_used_emoji: new Date()
 			}, {
 				where: {
-					id: u.id
+					id: u.id,
+					emoji_id: reaction.emoji.id
 				}
 			});
 		}
